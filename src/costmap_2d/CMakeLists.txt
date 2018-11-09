@@ -28,6 +28,8 @@ remove_definitions(-DDISABLE_LIBUSB-1.0)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(CUDA 8.0 REQUIRED)
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
+
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
