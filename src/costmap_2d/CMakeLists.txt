@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(costmap_2d)
 
+add_compile_options(-std=c++11)
 find_package(catkin REQUIRED
         COMPONENTS
             cmake_modules
@@ -26,12 +27,14 @@ find_package(PCL REQUIRED)
 remove_definitions(-DDISABLE_LIBUSB-1.0)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(CUDA 8.0 REQUIRED)
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
 )
 
 add_definitions(${EIGEN3_DEFINITIONS})
@@ -104,7 +107,7 @@ target_link_libraries(costmap_2d
   ${catkin_LIBRARIES}
 )
 
-add_library(layers
+cuda_add_library(layers
   plugins/inflation_layer.cpp
   plugins/obstacle_layer.cpp
   plugins/static_layer.cpp
@@ -114,6 +117,7 @@ add_library(layers
 add_dependencies(layers ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(layers
   costmap_2d
+  ${CUDA_LIBRARIES}
 )
 
 add_executable(costmap_2d_markers src/costmap_2d_markers.cpp)
