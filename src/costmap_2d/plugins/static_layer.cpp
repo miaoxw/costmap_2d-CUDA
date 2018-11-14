@@ -37,6 +37,7 @@
  *         David V. Lu!!
  *********************************************************************/
 #include <costmap_2d/static_layer.h>
+#include <costmap_2d/cuda_static_layer.h>
 #include <costmap_2d/costmap_math.h>
 #include <pluginlib/class_list_macros.h>
 
@@ -300,7 +301,7 @@ void StaticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int
   {
     // if not rolling, the layered costmap (master_grid) has same coordinates as this layer
     if (!use_maximum_)
-      updateWithTrueOverwrite(master_grid, min_i, min_j, max_i, max_j);
+      costmap_2d::cuda::updateWithTrueOverwrite(master_grid, min_i, min_j, max_i, max_j);
     else
       updateWithMax(master_grid, min_i, min_j, max_i, max_j);
   }

@@ -115,6 +115,7 @@ cuda_add_library(layers
   plugins/static_layer.cpp
   plugins/voxel_layer.cpp
   src/observation_buffer.cpp
+  plugins/static_layer.cu
 )
 add_dependencies(layers ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(layers
