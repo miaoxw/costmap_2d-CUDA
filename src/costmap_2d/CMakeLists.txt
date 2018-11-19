@@ -41,6 +41,10 @@ include_directories(
 
 add_definitions(${EIGEN3_DEFINITIONS})
 
+set(GENCODE -gencode=arch=compute_50,code=sm_50)
+set(GENCODE ${GENCODE} -gencode=arch=compute_61,code=sm_61)
+set(GENCODE ${GENCODE} -gencode=arch=compute_62,code=sm_62)
+
 # messages
 add_message_files(
     DIRECTORY msg
@@ -116,6 +120,7 @@ cuda_add_library(layers
   plugins/voxel_layer.cpp
   src/observation_buffer.cpp
   plugins/static_layer.cu
+  OPTIONS ${GENCODE}
 )
 add_dependencies(layers ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(layers
