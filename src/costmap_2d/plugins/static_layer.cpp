@@ -301,9 +301,9 @@ void StaticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int
   {
     // if not rolling, the layered costmap (master_grid) has same coordinates as this layer
     if (!use_maximum_)
-      costmap_2d::cuda::updateWithTrueOverwrite(master_grid, min_i, min_j, max_i, max_j);
+      costmap_2d::cuda::updateWithTrueOverwrite(master_grid, min_i, min_j, max_i, max_j, costmap_);
     else
-      updateWithMax(master_grid, min_i, min_j, max_i, max_j);
+      costmap_2d::cuda::updateWithMax(master_grid, min_i, min_j, max_i, max_j, costmap_);
   }
   else
   {
