@@ -323,7 +323,7 @@ void StaticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int
     }
     costmap_2d::cuda::static_layer::rollingUpdateCosts(master_grid, transform, layered_costmap_->getCostmap(), use_maximum_, min_i, min_j, max_i, max_j);
     // Copy map data given proper transformations
-    for (unsigned int i = min_i; i < max_i; ++i)
+    /*for (unsigned int i = min_i; i < max_i; ++i)
     {
       for (unsigned int j = min_j; j < max_j; ++j)
       {
@@ -341,7 +341,7 @@ void StaticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int
             master_grid.setCost(i, j, std::max(getCost(mx, my), master_grid.getCost(i, j)));
         }
       }
-    }
+    }*/
   }
 }
 

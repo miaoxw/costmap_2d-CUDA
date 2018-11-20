@@ -35,7 +35,7 @@ __global__ void updateWithMaxKernel(unsigned char *master,unsigned char *costmap
 	int index=span*j+i;
 	if(index<size)
 	{
-		if(costmap[i]==NO_INFORMATION)
+		if(costmap[index]==NO_INFORMATION)
 			return;
 		unsigned char oldCost=master[index];
 		if(oldCost==NO_INFORMATION||oldCost<costmap[index])
@@ -43,10 +43,53 @@ __global__ void updateWithMaxKernel(unsigned char *master,unsigned char *costmap
 	}
 }
 
+__device__ bool worldToMap(double origin_x,double origin_y,double resolution,double wx,double wy,unsigned int &mx,unsigned int &my)
+{
+	if(wx<origin_x||wy<origin_y)
+		return false;
+	
+	mx=(int)((wx-origin_x)/resolution);
+	my=(int)((wy-origin_y)/resolution);
+	return true;
+
+	//Missing down parts of test statement is placed at the if-clause in the large if.
+}
+
 __global__ void rollingUpdateCostsKernel(unsigned char *master, CostMapParameters masterParams,
 	unsigned char *costmap, CostMapParameters costmapParams, tf::TransformData serializedTF,
 	int min_i, int min_j, int max_i, int max_j, bool use_maximum)
 {
+	int id=blockIdx.x*blockDim.x+threadIdx.x;
+	int deltai=id/(max_i-min_i);
+	int deltaj=id%(max_j-min_j);
+	int i=min_i+deltai;
+	int j=min_j+deltaj;
+
+	double wx,wy;
+	wx=masterParams.origin_x+(i+0.5)*masterParams.resolution;
+	wy=masterParams.origin_y+(j+0.5)*masterParams.resolution;
+	double new_wx,new_wy;
+	new_wx=serializedTF.m_basis.m_el[0].m_floats[0]*wx+serializedTF.m_basis.m_el[0].m_floats[1]*wy+serializedTF.m_origin.m_floats[0];
+	new_wy=serializedTF.m_basis.m_el[1].m_floats[0]*wx+serializedTF.m_basis.m_el[1].m_floats[1]*wy+serializedTF.m_origin.m_floats[1];
+
+	unsigned int mx,my;
+	if(worldToMap(costmapParams.origin_x,costmapParams.origin_y,costmapParams.resolution,new_wx,new_wy,mx,my))
+	{
+		int master_index=i*masterParams.span+j;
+		int costmap_index=mx*masterParams.span+my;
+		if(costmap_index<sizeof(costmap)/sizeof(costmap[0]))
+		{
+			if(use_maximum)
+			{
+				if(master[master_index]<costmap[costmap_index])
+					master[master_index]=costmap[costmap_index];
+			}
+			else
+			{
+				master[master_index]=costmap[costmap_index];
+			}
+		}
+	}
 }
 
 void costmap_2d::cuda::updateWithTrueOverwrite(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j, unsigned char *costmap_)
