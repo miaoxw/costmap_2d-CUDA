@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <tf/tf.h>
 #include <costmap_2d/cuda_static_layer.h>
 
@@ -16,11 +15,11 @@ struct CostMapParameters
 __global__ void updateWithTrueOverwriteKernel(unsigned char *master,unsigned char *costmap,unsigned long size, int min_i, int min_j, int max_i, int max_j, int span)
 {
 	int id=blockIdx.x*blockDim.x+threadIdx.x;
-	int deltaj=id/(max_j-min_j);	//Row
-	int deltai=id%(max_i-min_i);	//Coloum
-	int j=min_j+deltaj;
+	int deltai=id/(max_i-min_i);	//width in x
+	int deltaj=id%(max_i-min_i);	//height in y
 	int i=min_i+deltai;
-	int index=span*j+i;
+	int j=min_j+deltaj;
+	int index=span*i+j;
 	if(index<size)
 		master[index]=costmap[index];
 }
@@ -28,11 +27,11 @@ __global__ void updateWithTrueOverwriteKernel(unsigned char *master,unsigned cha
 __global__ void updateWithMaxKernel(unsigned char *master,unsigned char *costmap,unsigned long size, int min_i, int min_j, int max_i, int max_j, int span)
 {
 	int id=blockIdx.x*blockDim.x+threadIdx.x;
-	int deltaj=id/(max_j-min_j);	//Row
-	int deltai=id%(max_i-min_i);	//Coloum
-	int j=min_j+deltaj;
+	int deltai=id/(max_i-min_i);	//width in x
+	int deltaj=id%(max_i-min_i);	//height in y
 	int i=min_i+deltai;
-	int index=span*j+i;
+	int j=min_j+deltaj;
+	int index=span*i+j;
 	if(index<size)
 	{
 		if(costmap[index]==NO_INFORMATION)
@@ -61,7 +60,7 @@ __global__ void rollingUpdateCostsKernel(unsigned char *master, CostMapParameter
 {
 	int id=blockIdx.x*blockDim.x+threadIdx.x;
 	int deltai=id/(max_i-min_i);
-	int deltaj=id%(max_j-min_j);
+	int deltaj=id%(max_i-min_i);
 	int i=min_i+deltai;
 	int j=min_j+deltaj;
 
