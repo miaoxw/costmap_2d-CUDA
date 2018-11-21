@@ -180,7 +180,7 @@ void costmap_2d::cuda::static_layer::rollingUpdateCosts(costmap_2d::Costmap2D& m
 
 	rollingUpdateCostsKernel<<<(sizeToUpdate+TPB-1)/TPB,TPB>>>(cuda_master,masterParams,cuda_costmap,costmapParams,serializedTF,min_i,min_j,max_i,max_j,use_maximum);
 
-	cudaMemcpy(master,cuda_master,sizeof(unsigned char)*size,cudaMemcpyDeviceToHost);
+	cudaMemcpy(master,cuda_master,sizeof(unsigned char)*master_size,cudaMemcpyDeviceToHost);
 	cudaFree(cuda_master);
 	cudaFree(cuda_costmap);
 }
