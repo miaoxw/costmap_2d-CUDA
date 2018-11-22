@@ -12,26 +12,26 @@ struct CostMapParameters
 	int span;
 };
 
-__global__ void updateWithTrueOverwriteKernel(unsigned char *master,unsigned char *costmap,unsigned long size, int min_i, int min_j, int max_i, int max_j, int span)
+__global__ void updateWithTrueOverwriteKernel(unsigned char *master,unsigned char *costmap,unsigned long size, int min_x, int min_y, int max_x, int max_y, int span)
 {
 	int id=blockIdx.x*blockDim.x+threadIdx.x;
-	int deltai=id/(max_i-min_i);	//width in x
-	int deltaj=id%(max_i-min_i);	//height in y
-	int i=min_i+deltai;
-	int j=min_j+deltaj;
-	int index=span*i+j;
+	int deltay=id/(max_x-min_x);
+	int deltax=id%(max_x-min_x);
+	int x=min_x+deltax;
+	int y=min_y+deltay;
+	int index=span*y+x;
 	if(index<size)
 		master[index]=costmap[index];
 }
 
-__global__ void updateWithMaxKernel(unsigned char *master,unsigned char *costmap,unsigned long size, int min_i, int min_j, int max_i, int max_j, int span)
+__global__ void updateWithMaxKernel(unsigned char *master,unsigned char *costmap,unsigned long size, int min_x, int min_y, int max_x, int max_y, int span)
 {
 	int id=blockIdx.x*blockDim.x+threadIdx.x;
-	int deltai=id/(max_i-min_i);	//width in x
-	int deltaj=id%(max_i-min_i);	//height in y
-	int i=min_i+deltai;
-	int j=min_j+deltaj;
-	int index=span*i+j;
+	int deltay=id/(max_x-min_x);
+	int deltax=id%(max_x-min_x);
+	int x=min_x+deltax;
+	int y=min_y+deltay;
+	int index=span*y+x;
 	if(index<size)
 	{
 		if(costmap[index]==NO_INFORMATION)
@@ -56,17 +56,17 @@ __device__ bool worldToMap(double origin_x,double origin_y,double resolution,dou
 
 __global__ void rollingUpdateCostsKernel(unsigned char *master, CostMapParameters masterParams,
 	unsigned char *costmap, CostMapParameters staticLayerParams, CostMapParameters layeredCostmapParams,
-	tf::TransformData serializedTF,	int min_i, int min_j, int max_i, int max_j, bool use_maximum)
+	tf::TransformData serializedTF,	int min_x, int min_y, int max_x, int max_y, bool use_maximum)
 {
 	int id=blockIdx.x*blockDim.x+threadIdx.x;
-	int deltai=id/(max_i-min_i);
-	int deltaj=id%(max_i-min_i);
-	int i=min_i+deltai;
-	int j=min_j+deltaj;
+	int deltay=id/(max_x-min_x);
+	int deltax=id%(max_x-min_x);
+	int x=min_x+deltax;
+	int y=min_y+deltay;
 
 	double wx,wy;
-	wx=layeredCostmapParams.origin_x+(i+0.5)*layeredCostmapParams.resolution;
-	wy=layeredCostmapParams.origin_y+(j+0.5)*layeredCostmapParams.resolution;
+	wx=layeredCostmapParams.origin_x+(x+0.5)*layeredCostmapParams.resolution;
+	wy=layeredCostmapParams.origin_y+(y+0.5)*layeredCostmapParams.resolution;
 	double new_wx,new_wy;
 	new_wx=serializedTF.m_basis.m_el[0].m_floats[0]*wx+serializedTF.m_basis.m_el[0].m_floats[1]*wy+serializedTF.m_origin.m_floats[0];
 	new_wy=serializedTF.m_basis.m_el[1].m_floats[0]*wx+serializedTF.m_basis.m_el[1].m_floats[1]*wy+serializedTF.m_origin.m_floats[1];
@@ -88,7 +88,7 @@ __global__ void rollingUpdateCostsKernel(unsigned char *master, CostMapParameter
 	}
 }
 
-void costmap_2d::cuda::updateWithTrueOverwrite(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j, unsigned char *costmap_)
+void costmap_2d::cuda::updateWithTrueOverwrite(costmap_2d::Costmap2D& master_grid, int min_x, int min_y, int max_x, int max_y, unsigned char *costmap_)
 {
 	//Unnecessary. Has been checked outside.
 	/*********
@@ -99,7 +99,7 @@ void costmap_2d::cuda::updateWithTrueOverwrite(costmap_2d::Costmap2D& master_gri
 	unsigned int span = master_grid.getSizeInCellsX();
 	unsigned long size=master_grid.getSizeInCellsX()*master_grid.getSizeInCellsY();
 
-	unsigned long sizeToUpdate=(max_j-min_j)*(max_i-min_i);
+	unsigned long sizeToUpdate=(max_y-min_y)*(max_x-min_x);
 
 	unsigned char *cuda_master=NULL;
 	unsigned char *cuda_costmap=NULL;
@@ -109,14 +109,14 @@ void costmap_2d::cuda::updateWithTrueOverwrite(costmap_2d::Costmap2D& master_gri
 	cudaMemcpy(cuda_master,master,sizeof(unsigned char)*size,cudaMemcpyHostToDevice);
 	cudaMemcpy(cuda_costmap,costmap_,sizeof(unsigned char)*size,cudaMemcpyHostToDevice);
 
-	updateWithTrueOverwriteKernel<<<(sizeToUpdate+TPB-1)/TPB,TPB>>>(cuda_master,cuda_costmap,size,min_i,min_j,max_i,max_j,span);
+	updateWithTrueOverwriteKernel<<<(sizeToUpdate+TPB-1)/TPB,TPB>>>(cuda_master,cuda_costmap,size,min_x,min_y,max_x,max_y,span);
 
 	cudaMemcpy(master,cuda_master,sizeof(unsigned char)*size,cudaMemcpyDeviceToHost);
 	cudaFree(cuda_master);
 	cudaFree(cuda_costmap);
 }
 
-void costmap_2d::cuda::updateWithMax(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j, unsigned char *costmap_)
+void costmap_2d::cuda::updateWithMax(costmap_2d::Costmap2D& master_grid, int min_x, int min_y, int max_x, int max_y, unsigned char *costmap_)
 {
 	//Unnecessary. Has been checked outside.
 	/*********
@@ -127,7 +127,7 @@ void costmap_2d::cuda::updateWithMax(costmap_2d::Costmap2D& master_grid, int min
 	unsigned int span = master_grid.getSizeInCellsX();
 	unsigned long size=master_grid.getSizeInCellsX()*master_grid.getSizeInCellsY();
 
-	unsigned long sizeToUpdate=(max_j-min_j)*(max_i-min_i);
+	unsigned long sizeToUpdate=(max_y-min_y)*(max_x-min_x);
 
 	unsigned char *cuda_master=NULL;
 	unsigned char *cuda_costmap=NULL;
@@ -137,14 +137,14 @@ void costmap_2d::cuda::updateWithMax(costmap_2d::Costmap2D& master_grid, int min
 	cudaMemcpy(cuda_master,master,sizeof(unsigned char)*size,cudaMemcpyHostToDevice);
 	cudaMemcpy(cuda_costmap,costmap_,sizeof(unsigned char)*size,cudaMemcpyHostToDevice);
 
-	updateWithMaxKernel<<<(sizeToUpdate+TPB-1)/TPB,TPB>>>(cuda_master,cuda_costmap,size,min_i,min_j,max_i,max_j,span);
+	updateWithMaxKernel<<<(sizeToUpdate+TPB-1)/TPB,TPB>>>(cuda_master,cuda_costmap,size,min_x,min_y,max_x,max_y,span);
 
 	cudaMemcpy(master,cuda_master,sizeof(unsigned char)*size,cudaMemcpyDeviceToHost);
 	cudaFree(cuda_master);
 	cudaFree(cuda_costmap);
 }
  
-void costmap_2d::cuda::static_layer::rollingUpdateCosts(costmap_2d::Costmap2D& master_grid, tf::StampedTransform tf, costmap_2d::Costmap2D *staticLayer_costmap, costmap_2d::Costmap2D *layered_costmap, bool use_maximum, int min_i, int min_j, int max_i, int max_j)
+void costmap_2d::cuda::static_layer::rollingUpdateCosts(costmap_2d::Costmap2D& master_grid, tf::StampedTransform tf, costmap_2d::Costmap2D *staticLayer_costmap, costmap_2d::Costmap2D *layered_costmap, bool use_maximum, int min_x, int min_y, int max_x, int max_y)
 {
 	struct tf::TransformData serializedTF;
 	tf.serialize(serializedTF);
@@ -168,7 +168,7 @@ void costmap_2d::cuda::static_layer::rollingUpdateCosts(costmap_2d::Costmap2D& m
 	layeredCostmapParams.origin_x = layered_costmap->getOriginX();
 	layeredCostmapParams.origin_y = layered_costmap->getOriginY();
 
-	unsigned long sizeToUpdate=(max_j-min_j)*(max_i-min_i);
+	unsigned long sizeToUpdate=(max_y-min_y)*(max_x-min_x);
 
 	unsigned char *cuda_master=NULL;
 	unsigned char *cuda_staticLayerCostmap=NULL;
@@ -178,7 +178,7 @@ void costmap_2d::cuda::static_layer::rollingUpdateCosts(costmap_2d::Costmap2D& m
 	cudaMemcpy(cuda_master,master,sizeof(unsigned char)*master_size,cudaMemcpyHostToDevice);
 	cudaMemcpy(cuda_staticLayerCostmap,costmap_grid,sizeof(unsigned char)*staticLayerCostmap_size,cudaMemcpyHostToDevice);
 
-	rollingUpdateCostsKernel<<<(sizeToUpdate+TPB-1)/TPB,TPB>>>(cuda_master,masterParams,cuda_staticLayerCostmap,staticLayerParams,layeredCostmapParams,serializedTF,min_i,min_j,max_i,max_j,use_maximum);
+	rollingUpdateCostsKernel<<<(sizeToUpdate+TPB-1)/TPB,TPB>>>(cuda_master,master_size,masterParams,cuda_staticLayerCostmap,staticLayerCostmap_size,staticLayerParams,layeredCostmapParams,serializedTF,min_x,min_y,max_x,max_y,use_maximum);
 
 	cudaMemcpy(master,cuda_master,sizeof(unsigned char)*master_size,cudaMemcpyDeviceToHost);
 	cudaFree(cuda_master);
