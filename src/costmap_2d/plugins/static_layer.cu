@@ -54,8 +54,8 @@ __device__ bool worldToMap(double origin_x,double origin_y,double resolution,dou
 	//Missing down parts of test statement is placed at the if-clause in the large if.
 }
 
-__global__ void rollingUpdateCostsKernel(unsigned char *master, CostMapParameters masterParams,
-	unsigned char *costmap, CostMapParameters staticLayerParams, CostMapParameters layeredCostmapParams,
+__global__ void rollingUpdateCostsKernel(unsigned char *master, unsigned long master_size, CostMapParameters masterParams,
+	unsigned char *costmap, unsigned long costmap_size, CostMapParameters staticLayerParams, CostMapParameters layeredCostmapParams,
 	tf::TransformData serializedTF,	int min_x, int min_y, int max_x, int max_y, bool use_maximum)
 {
 	int id=blockIdx.x*blockDim.x+threadIdx.x;
@@ -77,7 +77,7 @@ __global__ void rollingUpdateCostsKernel(unsigned char *master, CostMapParameter
 	{
 		int master_index=i*masterParams.span+j;
 		int costmap_index=mx*staticLayerParams.span+my;
-		if(costmap_index<sizeof(costmap)/sizeof(costmap[0]))
+		if(costmap_index<costmap_size)
 		{
 			if(use_maximum)
 				master[master_index]=
