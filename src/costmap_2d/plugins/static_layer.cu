@@ -75,8 +75,9 @@ __global__ void rollingUpdateCostsKernel(unsigned char *master, unsigned long ma
 	if(worldToMap(staticLayerParams.origin_x,staticLayerParams.origin_y,
 	staticLayerParams.resolution,new_wx,new_wy,mx,my))
 	{
-		int master_index=i*masterParams.span+j;
-		int costmap_index=mx*staticLayerParams.span+my;
+		int master_index=y*masterParams.span+x;
+		int costmap_index=my*staticLayerParams.span+mx;
+		
 		if(costmap_index<costmap_size)
 		{
 			if(use_maximum)
