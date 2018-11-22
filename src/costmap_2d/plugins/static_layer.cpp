@@ -323,27 +323,6 @@ void StaticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int
     }
     ROS_ERROR("rollingUpdateCosts");
     costmap_2d::cuda::static_layer::rollingUpdateCosts(master_grid, transform, this, layered_costmap_->getCostmap(), use_maximum_, min_i, min_j, max_i, max_j);
-    //costmap_2d::cuda::static_layer::rollingUpdateCosts(master_grid, transform, layered_costmap_->getCostmap(), use_maximum_, min_i, min_j, max_i, max_j);
-    // Copy map data given proper transformations
-    /*for (unsigned int i = min_i; i < max_i; ++i)
-    {
-      for (unsigned int j = min_j; j < max_j; ++j)
-      {
-        // Convert master_grid coordinates (i,j) into global_frame_(wx,wy) coordinates
-        layered_costmap_->getCostmap()->mapToWorld(i, j, wx, wy);
-        // Transform from global_frame_ to map_frame_
-        tf::Point p(wx, wy, 0);
-        p = transform(p);
-        // Set master_grid with cell from map
-        if (worldToMap(p.x(), p.y(), mx, my))
-        {
-          if (!use_maximum_)
-            master_grid.setCost(i, j, getCost(mx, my));
-          else
-            master_grid.setCost(i, j, std::max(getCost(mx, my), master_grid.getCost(i, j)));
-        }
-      }
-    }*/
   }
 }
 
