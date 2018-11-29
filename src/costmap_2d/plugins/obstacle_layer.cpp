@@ -36,6 +36,8 @@
  *         David V. Lu!!
  *********************************************************************/
 #include <costmap_2d/obstacle_layer.h>
+#include <costmap_2d/cuda_costmap_2d.h>
+#include <costmap_2d/cuda_obstcale_layer.h>
 #include <costmap_2d/costmap_math.h>
 #include <pluginlib/class_list_macros.h>
 
