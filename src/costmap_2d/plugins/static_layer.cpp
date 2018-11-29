@@ -37,6 +37,7 @@
  *         David V. Lu!!
  *********************************************************************/
 #include <costmap_2d/static_layer.h>
+#include <costmap_2d/cuda_costmap_2d.h>
 #include <costmap_2d/cuda_static_layer.h>
 #include <costmap_2d/costmap_math.h>
 #include <pluginlib/class_list_macros.h>

@@ -120,6 +120,7 @@ cuda_add_library(layers
   plugins/voxel_layer.cpp
   src/observation_buffer.cpp
   plugins/static_layer.cu
+  plugins/utility.cu
   OPTIONS ${GENCODE}
 )
 add_dependencies(layers ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
