@@ -389,7 +389,7 @@ void ObstacleLayer::updateBounds(double robot_x, double robot_y, double robot_ya
           + (pz - obs.origin_.z) * (pz - obs.origin_.z);
 
       // if the point is far enough away... we won't consider it
-      if (sq_dist >=   )
+      if (sq_dist >=  sq_obstacle_range)
       {
         ROS_DEBUG("The point is too far away");
         continue;
@@ -520,7 +520,7 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
 
   touch(ox, oy, min_x, min_y, max_x, max_y);
 
-  ROS_ERROR("cloud.points.size()=%d",cloud.points.size());
+  ROS_ERROR("cloud.points.size()=%lu",cloud.points.size());
   // for each point in the cloud, we want to trace a line from the origin and clear obstacles along it
   for (unsigned int i = 0; i < cloud.points.size(); ++i)
   {
