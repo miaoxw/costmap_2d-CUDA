@@ -6,9 +6,9 @@ namespace costmap_2d
 {
     namespace cuda
     {
-        namespace obstcale_layer
+        namespace obstacle_layer
         {
-            void rayTraceLine(costmap_2d::Costmap2D::Markcell action, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, unsigned int max_length = UINT_MAX);
+            void rayTraceFreeSpace(const Observation& clearing_observation, double origin_x, double origin_y, double map_end_x, double map_end_y, double resolution);
         }
     }
 }

@@ -1,5 +1,8 @@
 #include <tf/tf.h>
 #include <costmap_2d/cuda_static_layer.h>
+#include <vector>
+
+using std::vector;
 
 #define TPB 512
 

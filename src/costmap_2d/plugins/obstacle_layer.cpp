@@ -36,6 +36,7 @@
  *         David V. Lu!!
  *********************************************************************/
 #include <costmap_2d/obstacle_layer.h>
+#include <costmap_2d/cuda_obstacle_layer.h>
 #include <costmap_2d/costmap_math.h>
 #include <pluginlib/class_list_macros.h>
 
@@ -521,6 +522,7 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
   touch(ox, oy, min_x, min_y, max_x, max_y);
 
   ROS_ERROR("cloud.points.size()=%lu",cloud.points.size());
+  costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(clearing_observation,origin_x,origin_y,map_end_x,map_end_y,resolution_);
   // for each point in the cloud, we want to trace a line from the origin and clear obstacles along it
   for (unsigned int i = 0; i < cloud.points.size(); ++i)
   {
