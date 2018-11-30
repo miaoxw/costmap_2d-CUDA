@@ -36,8 +36,6 @@
  *         David V. Lu!!
  *********************************************************************/
 #include <costmap_2d/obstacle_layer.h>
-#include <costmap_2d/cuda_costmap_2d.h>
-#include <costmap_2d/cuda_obstcale_layer.h>
 #include <costmap_2d/costmap_math.h>
 #include <pluginlib/class_list_macros.h>
 
@@ -391,7 +389,7 @@ void ObstacleLayer::updateBounds(double robot_x, double robot_y, double robot_ya
           + (pz - obs.origin_.z) * (pz - obs.origin_.z);
 
       // if the point is far enough away... we won't consider it
-      if (sq_dist >= sq_obstacle_range)
+      if (sq_dist >=   )
       {
         ROS_DEBUG("The point is too far away");
         continue;
@@ -522,6 +520,7 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
 
   touch(ox, oy, min_x, min_y, max_x, max_y);
 
+  ROS_ERROR("cloud.points.size()=%d",cloud.points.size());
   // for each point in the cloud, we want to trace a line from the origin and clear obstacles along it
   for (unsigned int i = 0; i < cloud.points.size(); ++i)
   {
@@ -566,7 +565,7 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
 
     // check for legality just in case
     if (!worldToMap(wx, wy, x1, y1))
-      continue;
+      continue; 
 
     unsigned int cell_raytrace_range = cellDistance(clearing_observation.raytrace_range_);
     MarkCell marker(costmap_, FREE_SPACE);

@@ -120,7 +120,7 @@ cuda_add_library(layers
   plugins/voxel_layer.cpp
   src/observation_buffer.cpp
   plugins/static_layer.cu
-  plugins/obstcale_layer.cu
+  plugins/obstacle_layer.cu
   plugins/utility.cu
   OPTIONS ${GENCODE}
 )
