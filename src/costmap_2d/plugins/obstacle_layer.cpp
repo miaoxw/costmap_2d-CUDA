@@ -522,8 +522,8 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
   touch(ox, oy, min_x, min_y, max_x, max_y);
 
   ROS_ERROR("cloud.points.size()=%lu",cloud.points.size());
-  costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(clearing_observation,origin_x,origin_y,map_end_x,map_end_y,resolution_);
-  // for each point in the cloud, we want to trace a line from the origin and clear obstacles along it
+  costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(costmap_,FREE_SPACE,clearing_observation,origin_x,origin_y,map_end_x,map_end_y,resolution_,size_x_,size_y_,x0,y0,min_x,min_y,max_x,max_y);
+  /*// for each point in the cloud, we want to trace a line from the origin and clear obstacles along it
   for (unsigned int i = 0; i < cloud.points.size(); ++i)
   {
     double wx = cloud.points[i].x;
@@ -575,7 +575,7 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
     raytraceLine(marker, x0, y0, x1, y1, cell_raytrace_range);
 
     updateRaytraceBounds(ox, oy, wx, wy, clearing_observation.raytrace_range_, min_x, min_y, max_x, max_y);
-  }
+  }*/
 }
 
 void ObstacleLayer::activate()
