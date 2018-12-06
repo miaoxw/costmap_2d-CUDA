@@ -37,6 +37,7 @@
  *********************************************************************/
 #include <algorithm>
 #include <costmap_2d/inflation_layer.h>
+#include <costmap_2d/cuda_inflation_layer.h>
 #include <costmap_2d/costmap_math.h>
 #include <costmap_2d/footprint.h>
 #include <boost/thread.hpp>

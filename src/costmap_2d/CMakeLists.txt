@@ -121,6 +121,7 @@ cuda_add_library(layers
   src/observation_buffer.cpp
   plugins/static_layer.cu
   plugins/obstacle_layer.cu
+  plugins/inflation_layer.cu
   plugins/utility.cu
   OPTIONS ${GENCODE}
 )
