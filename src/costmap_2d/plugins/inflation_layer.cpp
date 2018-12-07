@@ -230,7 +230,8 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
     }
   }
 
-  // Process cells by increasing distance; new cells are appended to the corresponding distance bin, so they
+  costmap_2d::cuda::inflation_layer::setCostFlooding(master_array,size_x,size_y,cached_costs_,obs_bin,inflation_radius_,inflate_unknown_);
+  /*// Process cells by increasing distance; new cells are appended to the corresponding distance bin, so they
   // can overtake previously inserted but farther away cells
   std::map<double, std::vector<CellData> >::iterator bin;
   for (bin = inflation_cells_.begin(); bin != inflation_cells_.end(); ++bin)
@@ -273,7 +274,7 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
       if (my < size_y - 1)
         enqueue(index + size_x, mx, my + 1, sx, sy);
     }
-  }
+  }*/
 
   inflation_cells_.clear();
 }
