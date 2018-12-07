@@ -54,6 +54,10 @@ namespace costmap_2d
 class CellData
 {
 public:
+  //Default constructor for creating array with no valid data.
+  CellData():index_(0),x_(0),y_(0),src_x_(0),src_y_(0)
+  {
+  }
   /**
    * @brief  Constructor for a CellData objects
    * @param  i The index of the cell in the cost map
