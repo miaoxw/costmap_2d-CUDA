@@ -322,7 +322,6 @@ void StaticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int
       ROS_ERROR("%s", ex.what());
       return;
     }
-    ROS_ERROR("rollingUpdateCosts");
     costmap_2d::cuda::static_layer::rollingUpdateCosts(master_grid, transform, this, layered_costmap_->getCostmap(), use_maximum_, min_i, min_j, max_i, max_j);
   }
 }
