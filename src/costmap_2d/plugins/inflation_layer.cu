@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cstring>
 #include <vector>
-#include <stdio.h>
 
 #define TPB 512
 
@@ -40,9 +39,9 @@ __global__ void setCostFloodingInflateUnkown(unsigned char *master, unsigned lon
     unsigned char cost=cachedCost_1D[abs(deltay)*cacheSize+abs(deltax)];
     unsigned char old_cost=master[index];
 
-    /*if(old_cost==NO_INFORMATION&&cost>FREE_SPACE)
+    if(old_cost==NO_INFORMATION&&cost>FREE_SPACE)
         master[index]=cost;
-    else*/
+    else
         master[index]=cost>old_cost?cost:old_cost;
 }
 
@@ -86,6 +85,8 @@ void costmap_2d::cuda::inflation_layer::setCostFlooding(unsigned char *master, u
     
     //Compress the original 2D cached cost into 1D for more convenient cuda_memcpy
     unsigned char *cachedCost_1D=new unsigned char[cacheSize*cacheSize];
+    for(int i=0;i<cacheSize;++i)
+        memcpy(cachedCost_1D+cacheSize*i,cached_cost[i],cacheSize*sizeof(unsigned char));
     
     CellData *obstaclesArray=new CellData[obstacles.size()];
     memcpy(obstaclesArray,&obstacles[0],obstacles.size()*sizeof(CellData));
