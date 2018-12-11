@@ -53,19 +53,22 @@ __global__ void setCostFloodingNoInflateUnkown(unsigned char *master, unsigned l
     int id=blockIdx.x*blockDim.x+threadIdx.x;
     int temp=id;
 
+    //No need to handle those threads not assigned with tasks
     int obstacleNum=temp/((2*inflation_radius+1)*(2*inflation_radius+1));
     if(obstacleNum>obstaclesArray_count)
         return;
     
     temp%=(2*inflation_radius+1)*(2*inflation_radius+1);
 
+    //No need to handle those threads too far away from obstacles
     int deltay=temp/(2*inflation_radius+1)-inflation_radius;
     int deltax=temp%(2*inflation_radius+1)-inflation_radius;
+    if(deltax*deltax+deltay*deltay>inflation_radius*inflation_radius)
+        return;
 
-    //Only obstacleNum may out of bounds. No need to check i and j again.
+    //No need to handle those threads out of bounds
     int x=obstaclesArray[obstacleNum].src_x_+deltax;
     int y=obstaclesArray[obstacleNum].src_y_+deltay;
-    
     if(x<min_i||x>=max_i||y<min_j||y>=max_j)
         return;
     
