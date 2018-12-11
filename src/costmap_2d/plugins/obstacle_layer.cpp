@@ -49,6 +49,8 @@ using costmap_2d::FREE_SPACE;
 using costmap_2d::ObservationBuffer;
 using costmap_2d::Observation;
 
+using costmap_2d::cuda::obstacle_layer::PointXY;
+
 namespace costmap_2d
 {
 
@@ -496,6 +498,7 @@ bool ObstacleLayer::getClearingObservations(std::vector<Observation>& clearing_o
   return current;
 }
 
+
 void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, double* min_x, double* min_y,
                                               double* max_x, double* max_y)
 {
@@ -522,7 +525,30 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
   touch(ox, oy, min_x, min_y, max_x, max_y);
 
   ROS_ERROR("cloud.points.size()=%lu",cloud.points.size());
-  costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(costmap_,FREE_SPACE,clearing_observation,origin_x,origin_y,map_end_x,map_end_y,resolution_,size_x_,size_y_,x0,y0,min_x,min_y,max_x,max_y);
+  //double **cloudPoints  =  new double* [cloud.points.size()]  ; //分配一个指针数组，将其首地址保存在a中   、
+  
+  PointXY *cloudPoints=new PointXY[cloud.points.size()];
+  
+  for(int i = 0; i < cloud.points.size(); i++){
+    cloudPoints[i].x = cloud.points[i].x;
+    cloudPoints[i].y = cloud.points[i].y;
+  }
+  
+  int pointLen=cloud.points.size();
+
+
+
+    
+  costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(
+    getCharMap(),getSizeInCellsX(),getSizeInCellsY(),FREE_SPACE,clearing_observation,cloudPoints,pointLen,
+    origin_x,origin_y,ox,oy,map_end_x,map_end_y,
+    resolution_,size_x_,size_y_,x0,y0,
+    min_x,min_y,max_x,max_y);
+  //free
+  delete []cloudPoints;
+  
+  
+  //costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(costmap_,FREE_SPACE,clearing_observation,origin_x,origin_y,map_end_x,map_end_y,resolution_,size_x_,size_y_,x0,y0,min_x,min_y,max_x,max_y);
   /*// for each point in the cloud, we want to trace a line from the origin and clear obstacles along it
   for (unsigned int i = 0; i < cloud.points.size(); ++i)
   {
