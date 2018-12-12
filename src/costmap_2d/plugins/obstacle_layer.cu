@@ -13,6 +13,11 @@ using std::ceil;
 
 using pcl::PointXYZ;
 
+struct MyPointXY
+{
+    float x,y;
+};
+
 __device__ bool worldToMap(double wx, double wy, unsigned int& mx, unsigned int& my, double origin_x, double origin_y,
     double resolution, unsigned int size_x, unsigned int size_y)
 {
@@ -91,7 +96,7 @@ __device__ void updateRaytraceBounds(double ox, double oy, double wx, double wy,
 }
 
 __global__ void rayTraceFreeSpaceKernel(unsigned char *costmap, unsigned char defaultValue, double raytraceRange,
-    PointXYZ *cloudArray, int cloudArray_size, double origin_x, double origin_y, double ox, double oy,
+    MyPointXY *cloudArray, int cloudArray_size, double origin_x, double origin_y, double ox, double oy,
     double map_end_x, double map_end_y, double resolution, unsigned int size_x, unsigned int size_y,
     unsigned int x0, unsigned int y0, double *min_x, double *min_y, double *max_x, double *max_y)
 {
@@ -156,9 +161,17 @@ void costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(unsigned char *costmap,
     double oy = clearing_observation.origin_.y;
     pcl::PointCloud < PointXYZ > cloud = *(clearing_observation.cloud_);
 
-    PointXYZ *cuda_cloudArray;
-    cudaMalloc(&cuda_cloudArray,sizeof(PointXYZ)*clearing_observation.cloud_->size());
-    cudaMemcpy(cuda_cloudArray,&(clearing_observation.cloud_->at(0)),sizeof(PointXYZ)*clearing_observation.cloud_->size(),cudaMemcpyHostToDevice);
+    //Workaround for Eign align problems
+    MyPointXY *cloudArray=new MyPointXY[clearing_observation.cloud_->size()];
+    for(int i=0;i<clearing_observation.cloud_->size();++i)
+    {
+        cloudArray[i].x=clearing_observation.cloud_->at(i).x;
+        cloudArray[i].y=clearing_observation.cloud_->at(i).y;
+    }
+    
+    MyPointXY *cuda_cloudArray;
+    cudaMalloc(&cuda_cloudArray,sizeof(MyPointXY)*clearing_observation.cloud_->size());
+    cudaMemcpy(cuda_cloudArray,cloudArray,sizeof(MyPointXY)*clearing_observation.cloud_->size(),cudaMemcpyHostToDevice);
     unsigned char *cuda_costmap;
     cudaMalloc(&cuda_costmap,sizeof(unsigned char)*size_x*size_y);
     cudaMemcpy(cuda_costmap,costmap,sizeof(unsigned char)*size_x*size_y,cudaMemcpyHostToDevice);
