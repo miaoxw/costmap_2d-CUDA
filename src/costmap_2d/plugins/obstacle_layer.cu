@@ -12,11 +12,7 @@ using std::max;
 using std::ceil;
 
 using pcl::PointXYZ;
-
-struct MyPointXY
-{
-    float x,y;
-};
+using costmap_2d::cuda::obstacle_layer::MyPointXY;
 
 __device__ bool worldToMap(double wx, double wy, unsigned int& mx, unsigned int& my, double origin_x, double origin_y,
     double resolution, unsigned int size_x, unsigned int size_y)
@@ -155,23 +151,14 @@ __global__ void rayTraceFreeSpaceKernel(unsigned char *costmap, unsigned char de
     updateRaytraceBounds(ox, oy, wx, wy, raytraceRange, min_x, min_y, max_x, max_y);
 }
 
-void costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(unsigned char *costmap, unsigned char defaultValue, const Observation& clearing_observation, double origin_x, double origin_y, double map_end_x, double map_end_y, double resolution, unsigned int size_x, unsigned int size_y, unsigned int x0, unsigned int y0, double *min_x, double *min_y, double *max_x, double *max_y)
+void costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(unsigned char *costmap, unsigned char defaultValue, double raytraceRange,
+    MyPointXY *cloudArray, unsigned int cloudArraySize, double ox, double oy, double origin_x, double origin_y,
+    double map_end_x, double map_end_y, double resolution, unsigned int size_x, unsigned int size_y,
+    unsigned int x0, unsigned int y0, double *min_x, double *min_y, double *max_x, double *max_y)
 {
-    double ox = clearing_observation.origin_.x;
-    double oy = clearing_observation.origin_.y;
-    pcl::PointCloud < PointXYZ > cloud = *(clearing_observation.cloud_);
-
-    //Workaround for Eign align problems
-    MyPointXY *cloudArray=new MyPointXY[clearing_observation.cloud_->size()];
-    for(int i=0;i<clearing_observation.cloud_->size();++i)
-    {
-        cloudArray[i].x=clearing_observation.cloud_->at(i).x;
-        cloudArray[i].y=clearing_observation.cloud_->at(i).y;
-    }
-    
     MyPointXY *cuda_cloudArray;
-    cudaMalloc(&cuda_cloudArray,sizeof(MyPointXY)*clearing_observation.cloud_->size());
-    cudaMemcpy(cuda_cloudArray,cloudArray,sizeof(MyPointXY)*clearing_observation.cloud_->size(),cudaMemcpyHostToDevice);
+    cudaMalloc(&cuda_cloudArray,sizeof(MyPointXY)*cloudArraySize);
+    cudaMemcpy(cuda_cloudArray,cloudArray,sizeof(MyPointXY)*cloudArraySize,cudaMemcpyHostToDevice);
     unsigned char *cuda_costmap;
     cudaMalloc(&cuda_costmap,sizeof(unsigned char)*size_x*size_y);
     cudaMemcpy(cuda_costmap,costmap,sizeof(unsigned char)*size_x*size_y,cudaMemcpyHostToDevice);
@@ -185,7 +172,7 @@ void costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(unsigned char *costmap,
     cudaMalloc(&cuda_max_y,sizeof(double));
     cudaMemcpy(cuda_max_y,max_y,sizeof(double),cudaMemcpyHostToDevice);
 
-    rayTraceFreeSpaceKernel<<<(clearing_observation.cloud_->size()+TPB-1)/TPB,TPB>>>(cuda_costmap,defaultValue,clearing_observation.raytrace_range_,cuda_cloudArray,clearing_observation.cloud_->size(),origin_x,origin_y,ox,oy,map_end_x,map_end_y,resolution,size_x,size_y,x0,y0,cuda_min_x,cuda_min_y,cuda_max_x,cuda_max_y);
+    rayTraceFreeSpaceKernel<<<(cloudArraySize+TPB-1)/TPB,TPB>>>(cuda_costmap,defaultValue,raytraceRange,cuda_cloudArray,cloudArraySize,origin_x,origin_y,ox,oy,map_end_x,map_end_y,resolution,size_x,size_y,x0,y0,cuda_min_x,cuda_min_y,cuda_max_x,cuda_max_y);
 
     cudaMemcpy(costmap,cuda_costmap,sizeof(unsigned char)*size_x*size_y,cudaMemcpyDeviceToHost);
     cudaMemcpy(min_x,cuda_min_x,sizeof(double),cudaMemcpyDeviceToHost);

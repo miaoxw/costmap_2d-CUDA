@@ -49,6 +49,8 @@ using costmap_2d::FREE_SPACE;
 using costmap_2d::ObservationBuffer;
 using costmap_2d::Observation;
 
+using costmap_2d::cuda::obstacle_layer::MyPointXY;
+
 namespace costmap_2d
 {
 
@@ -503,6 +505,14 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
   double oy = clearing_observation.origin_.y;
   pcl::PointCloud < pcl::PointXYZ > cloud = *(clearing_observation.cloud_);
 
+  //Workaround for Eign align problems
+  MyPointXY *cloudArray=new MyPointXY[clearing_observation.cloud_->size()];
+  for(int i=0;i<clearing_observation.cloud_->size();++i)
+  {
+      cloudArray[i].x=clearing_observation.cloud_->at(i).x;
+      cloudArray[i].y=clearing_observation.cloud_->at(i).y;
+  }
+
   // get the map coordinates of the origin of the sensor
   unsigned int x0, y0;
   if (!worldToMap(ox, oy, x0, y0))
@@ -521,7 +531,9 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
 
   touch(ox, oy, min_x, min_y, max_x, max_y);
 
-  costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(costmap_,FREE_SPACE,clearing_observation,origin_x,origin_y,map_end_x,map_end_y,resolution_,size_x_,size_y_,x0,y0,min_x,min_y,max_x,max_y);
+  costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(costmap_,FREE_SPACE,clearing_observation.raytrace_range_,cloudArray,clearing_observation.cloud_->size(),ox,oy,origin_x,origin_y,map_end_x,map_end_y,resolution_,size_x_,size_y_,x0,y0,min_x,min_y,max_x,max_y);
+
+  delete[] cloudArray;
 }
 
 void ObstacleLayer::activate()
