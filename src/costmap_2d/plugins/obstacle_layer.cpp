@@ -521,61 +521,7 @@ void ObstacleLayer::raytraceFreespace(const Observation& clearing_observation, d
 
   touch(ox, oy, min_x, min_y, max_x, max_y);
 
-  ROS_ERROR("cloud.points.size()=%lu",cloud.points.size());
   costmap_2d::cuda::obstacle_layer::rayTraceFreeSpace(costmap_,FREE_SPACE,clearing_observation,origin_x,origin_y,map_end_x,map_end_y,resolution_,size_x_,size_y_,x0,y0,min_x,min_y,max_x,max_y);
-  /*// for each point in the cloud, we want to trace a line from the origin and clear obstacles along it
-  for (unsigned int i = 0; i < cloud.points.size(); ++i)
-  {
-    double wx = cloud.points[i].x;
-    double wy = cloud.points[i].y;
-
-    // now we also need to make sure that the enpoint we're raytracing
-    // to isn't off the costmap and scale if necessary
-    double a = wx - ox;
-    double b = wy - oy;
-
-    // the minimum value to raytrace from is the origin
-    if (wx < origin_x)
-    {
-      double t = (origin_x - ox) / a;
-      wx = origin_x;
-      wy = oy + b * t;
-    }
-    if (wy < origin_y)
-    {
-      double t = (origin_y - oy) / b;
-      wx = ox + a * t;
-      wy = origin_y;
-    }
-
-    // the maximum value to raytrace to is the end of the map
-    if (wx > map_end_x)
-    {
-      double t = (map_end_x - ox) / a;
-      wx = map_end_x - .001;
-      wy = oy + b * t;
-    }
-    if (wy > map_end_y)
-    {
-      double t = (map_end_y - oy) / b;
-      wx = ox + a * t;
-      wy = map_end_y - .001;
-    }
-
-    // now that the vector is scaled correctly... we'll get the map coordinates of its endpoint
-    unsigned int x1, y1;
-
-    // check for legality just in case
-    if (!worldToMap(wx, wy, x1, y1))
-      continue; 
-
-    unsigned int cell_raytrace_range = cellDistance(clearing_observation.raytrace_range_);
-    MarkCell marker(costmap_, FREE_SPACE);
-    // and finally... we can execute our trace to clear obstacles along that line
-    raytraceLine(marker, x0, y0, x1, y1, cell_raytrace_range);
-
-    updateRaytraceBounds(ox, oy, wx, wy, clearing_observation.raytrace_range_, min_x, min_y, max_x, max_y);
-  }*/
 }
 
 void ObstacleLayer::activate()
