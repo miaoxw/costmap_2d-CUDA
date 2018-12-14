@@ -120,7 +120,13 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
   private_nh.param("track_unknown_space", track_unknown_space, false);
   private_nh.param("always_send_full_costmap", always_send_full_costmap, false);
 
-  layered_costmap_ = new LayeredCostmap(global_frame_, rolling_window, track_unknown_space);
+
+  char filename[256];
+  sprintf(filename,"/dev/shm/%s.csv",name_.c_str());
+  fout=fopen(filename,"w");
+  fprintf(fout,"Layer,Time\n");
+
+  layered_costmap_ = new LayeredCostmap(global_frame_, rolling_window, track_unknown_space, fout);
 
   if (!private_nh.hasParam("plugins"))
   {
@@ -197,6 +203,7 @@ Costmap2DROS::~Costmap2DROS()
   if (publisher_ != NULL)
     delete publisher_;
 
+  fclose(fout);
   delete layered_costmap_;
   delete dsrv_;
 }
@@ -405,7 +412,7 @@ void Costmap2DROS::mapUpdateLoop(double frequency)
     start_t = start.tv_sec + double(start.tv_usec) / 1e6;
     end_t = end.tv_sec + double(end.tv_usec) / 1e6;
     t_diff = end_t - start_t;
-    ROS_DEBUG("Map update time: %.9f", t_diff);
+    fprintf(fout,"Overall,%.9f\n",t_diff);
     if (publish_cycle.toSec() > 0 && layered_costmap_->isInitialized())
     {
       unsigned int x0, y0, xn, yn;

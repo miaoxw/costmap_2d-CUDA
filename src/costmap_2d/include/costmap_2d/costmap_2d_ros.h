@@ -38,14 +38,14 @@
 #ifndef COSTMAP_2D_COSTMAP_2D_ROS_H_
 #define COSTMAP_2D_COSTMAP_2D_ROS_H_
 
-#include <costmap_2d/layered_costmap.h>
-#include <costmap_2d/layer.h>
-#include <costmap_2d/costmap_2d_publisher.h>
 #include <costmap_2d/Costmap2DConfig.h>
+#include <costmap_2d/costmap_2d_publisher.h>
 #include <costmap_2d/footprint.h>
+#include <costmap_2d/layer.h>
+#include <costmap_2d/layered_costmap.h>
+#include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/Polygon.h>
 #include <geometry_msgs/PolygonStamped.h>
-#include <dynamic_reconfigure/server.h>
 #include <pluginlib/class_loader.h>
 
 class SuperValue : public XmlRpc::XmlRpcValue
@@ -65,7 +65,6 @@ public:
 
 namespace costmap_2d
 {
-
 /** @brief A ROS wrapper for a 2D Costmap. Handles subscribing to
  * topics that provide observations about obstacles in either the form
  * of PointCloud or LaserScan messages. */
@@ -111,9 +110,9 @@ public:
 
   /** @brief Same as getLayeredCostmap()->isCurrent(). */
   bool isCurrent()
-    {
-      return layered_costmap_->isCurrent();
-    }
+  {
+    return layered_costmap_->isCurrent();
+  }
 
   /**
    * @brief Get the pose of the robot in the global frame of the costmap
@@ -126,31 +125,31 @@ public:
    *
    * Same as calling getLayeredCostmap()->getCostmap(). */
   Costmap2D* getCostmap()
-    {
-      return layered_costmap_->getCostmap();
-    }
+  {
+    return layered_costmap_->getCostmap();
+  }
 
   /**
    * @brief  Returns the global frame of the costmap
    * @return The global frame of the costmap
    */
   std::string getGlobalFrameID()
-    {
-      return global_frame_;
-    }
+  {
+    return global_frame_;
+  }
 
   /**
    * @brief  Returns the local frame of the costmap
    * @return The local frame of the costmap
    */
   std::string getBaseFrameID()
-    {
-      return robot_base_frame_;
-    }
+  {
+    return robot_base_frame_;
+  }
   LayeredCostmap* getLayeredCostmap()
-    {
-      return layered_costmap_;
-    }
+  {
+    return layered_costmap_;
+  }
 
   /** @brief Returns the current padded footprint as a geometry_msgs::Polygon. */
   geometry_msgs::Polygon getRobotFootprintPolygon()
@@ -216,22 +215,22 @@ public:
 protected:
   LayeredCostmap* layered_costmap_;
   std::string name_;
-  tf::TransformListener& tf_;  ///< @brief Used for transforming point clouds
-  std::string global_frame_;  ///< @brief The global frame for the costmap
+  tf::TransformListener& tf_;     ///< @brief Used for transforming point clouds
+  std::string global_frame_;      ///< @brief The global frame for the costmap
   std::string robot_base_frame_;  ///< @brief The frame_id of the robot base
-  double transform_tolerance_;  ///< timeout before transform errors
+  double transform_tolerance_;    ///< timeout before transform errors
 
 private:
   /** @brief Set the footprint from the new_config object.
    *
    * If the values of footprint and robot_radius are the same in
    * new_config and old_config, nothing is changed. */
-  void readFootprintFromConfig(const costmap_2d::Costmap2DConfig &new_config,
-                               const costmap_2d::Costmap2DConfig &old_config);
+  void readFootprintFromConfig(const costmap_2d::Costmap2DConfig& new_config,
+                               const costmap_2d::Costmap2DConfig& old_config);
 
   void resetOldParameters(ros::NodeHandle& nh);
-  void reconfigureCB(costmap_2d::Costmap2DConfig &config, uint32_t level);
-  void movementCB(const ros::TimerEvent &event);
+  void reconfigureCB(costmap_2d::Costmap2DConfig& config, uint32_t level);
+  void movementCB(const ros::TimerEvent& event);
   void mapUpdateLoop(double frequency);
   bool map_update_thread_shutdown_;
   bool stop_updates_, initialized_, stopped_, robot_stopped_;
@@ -242,7 +241,7 @@ private:
   pluginlib::ClassLoader<Layer> plugin_loader_;
   tf::Stamped<tf::Pose> old_pose_;
   Costmap2DPublisher* publisher_;
-  dynamic_reconfigure::Server<costmap_2d::Costmap2DConfig> *dsrv_;
+  dynamic_reconfigure::Server<costmap_2d::Costmap2DConfig>* dsrv_;
 
   boost::recursive_mutex configuration_mutex_;
 
@@ -252,6 +251,7 @@ private:
   std::vector<geometry_msgs::Point> padded_footprint_;
   float footprint_padding_;
   costmap_2d::Costmap2DConfig old_config_;
+  std::FILE *fout;
 };
 // class Costmap2DROS
 }  // namespace costmap_2d
