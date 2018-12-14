@@ -42,12 +42,13 @@
 #include <algorithm>
 #include <vector>
 
+using std::fprintf;
 using std::vector;
 
 namespace costmap_2d
 {
 
-LayeredCostmap::LayeredCostmap(std::string global_frame, bool rolling_window, bool track_unknown) :
+LayeredCostmap::LayeredCostmap(std::string global_frame, bool rolling_window, bool track_unknown, std::FILE *fout_):
     costmap_(),
     global_frame_(global_frame),
     rolling_window_(rolling_window),
@@ -69,6 +70,8 @@ LayeredCostmap::LayeredCostmap(std::string global_frame, bool rolling_window, bo
     costmap_.setDefaultValue(255);
   else
     costmap_.setDefaultValue(0);
+
+  fout=fout_;
 }
 
 LayeredCostmap::~LayeredCostmap()
@@ -148,7 +151,17 @@ void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
   for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
        ++plugin)
   {
+    struct timeval start, end;
+    double start_t, end_t, t_diff;
+    gettimeofday(&start, NULL);
+
     (*plugin)->updateCosts(costmap_, x0, y0, xn, yn);
+
+    gettimeofday(&end, NULL);
+    start_t = start.tv_sec + double(start.tv_usec) / 1e6;
+    end_t = end.tv_sec + double(end.tv_usec) / 1e6;
+    t_diff = end_t - start_t;
+    fprintf(fout,"%s,%.9lf\n",(*plugin)->getName().c_str(),t_diff);    
   }
 
   bx0_ = x0;
