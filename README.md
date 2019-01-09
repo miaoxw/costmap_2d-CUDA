@@ -16,4 +16,4 @@ If multiple workspaces are in use, consider [chaining catkin workspaces](http://
 CUDA Toolkit 8.0 is recommended.
 
 ## Test data and base map
-*Currently looking for approriate place for public access. Link will be offered later.*
+Please refer to the [Release page](https://github.com/miaoxw/costmap_2d-CUDA/releases).
